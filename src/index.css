@@ -1,1 +1,23 @@
 @import "tailwindcss";
+@keyframes galaxy {
+    0% { transform: scale(0) rotate(0deg); }
+    50% { transform: scale(1) rotate(180deg); }
+    100% { transform: scale(0) rotate(360deg); }
+  }
+  
+  .animate-galaxy {
+    animation: galaxy 4s infinite;
+  }
+  
+  .rain-drop {
+    position: absolute;
+    width: 2px;
+    height: 50px;
+    background: linear-gradient(to bottom, #ffffff, #00ffff);
+    animation: rain 1s linear infinite;
+  }
+  
+  @keyframes rain {
+    0% { transform: translateY(-100vh); }
+    100% { transform: translateY(100vh); }
+  }

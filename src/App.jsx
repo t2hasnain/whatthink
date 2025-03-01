@@ -1,15 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { database, ref, push } from './firebase';
 
-const RelationshipApp = () => {
+const RomanticApp = () => {
   const [name, setName] = useState('');
   const [feedback, setFeedback] = useState('');
   const [view, setView] = useState('name');
-  const [result, setResult] = useState(null);
+  const [isRania, setIsRania] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Generate falling elements
+  const fallingElements = Array.from({ length: 50 }).map((_, i) => ({
+    id: i,
+    emoji: ['🌸', '💖', '🌙', '🌟', '🌠'][Math.floor(Math.random() * 5)],
+    style: {
+      left: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 2}s`
+    }
+  }));
+
   const handleNameSubmit = () => {
+    setIsRania(name.toLowerCase() === 'rania');
     setView('feedback');
   };
 
@@ -20,24 +31,38 @@ const RelationshipApp = () => {
     await push(ref(database, 'responses'), {
       name,
       feedback,
+      isRania,
       timestamp: new Date().toISOString()
     });
 
-    // Determine result type
-    if (feedback.toLowerCase().includes('bad')) {
-      setResult('bad');
-    } else if (feedback.toLowerCase().includes('good')) {
-      setResult('good');
-    } else {
-      setResult('lovely');
-    }
-    
     setView('result');
     setIsSubmitting(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-pink-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Falling Animation Layer */}
+      {view === 'result' && isRania && (
+        <div className="fixed inset-0 pointer-events-none">
+          {fallingElements.map(({ id, emoji, style }) => (
+            <motion.div
+              key={id}
+              className="absolute text-4xl -top-10"
+              initial={{ y: -100 }}
+              animate={{ y: '100vh' }}
+              transition={{
+                duration: 5 + Math.random() * 5,
+                repeat: Infinity,
+                ease: 'linear'
+              }}
+              style={style}
+            >
+              {emoji}
+            </motion.div>
+          ))}
+        </div>
+      )}
+
       <AnimatePresence mode='wait'>
         {view === 'name' && (
           <motion.div
@@ -45,20 +70,24 @@ const RelationshipApp = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full max-w-md"
+            className="w-full max-w-md z-10"
           >
+                    <h1 className="text-amber-50 relative bottom-2.5 text-2xl font-bold "> Type Correct Name Like Hasnain</h1>
+
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-4 rounded-lg mb-4 text-xl"
-              placeholder="What's your name?"
+              className="w-full p-4 rounded-lg mb-4 text-xl bg-white/90"
+              placeholder="What's your beautiful name?"
             />
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleNameSubmit}
-              className="w-full bg-pink-500 text-white p-4 rounded-lg hover:bg-pink-600 transition-colors"
+              className="w-full bg-pink-500 text-white p-4 rounded-lg"
             >
-              Submit Name
-            </button>
+              Continue 💖
+            </motion.button>
           </motion.div>
         )}
 
@@ -68,21 +97,23 @@ const RelationshipApp = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full max-w-md"
+            className="w-full max-w-md z-10"
           >
             <input
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              className="w-full p-4 rounded-lg mb-4 text-xl"
-              placeholder="What do you think about me?"
+              className="w-full p-4 rounded-lg mb-4 text-xl bg-white/90"
+              placeholder={`What's on your mind about me 💭`}
             />
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleFeedbackSubmit}
               disabled={isSubmitting}
-              className="w-full bg-pink-500 text-white p-4 rounded-lg hover:bg-pink-600 transition-colors disabled:opacity-50"
+              className="w-full bg-pink-500 text-white p-4 rounded-lg disabled:opacity-50"
             >
-              {isSubmitting ? 'Saving...' : 'Submit Feedback'}
-            </button>
+              {isSubmitting ? 'Sending to Heart... 💌' : 'Share Your Feelings 💞'}
+            </motion.button>
           </motion.div>
         )}
 
@@ -91,54 +122,47 @@ const RelationshipApp = () => {
             key="result"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="text-center text-white"
+            className="text-center text-white z-10 space-y-8"
           >
-            {result === 'bad' && (
-              <div className="text-4xl font-bold animate-pulse">
-                thanks for submit
-              </div>
-            )}
-
-            {result === 'good' && (
-              <motion.div
-                initial={{ rotate: -180, scale: 0 }}
-                animate={{ rotate: 0, scale: 1 }}
-                className="text-5xl space-y-4"
-              >
-                <div>🎉 Thank You! 🌟</div>
-                <div className="text-3xl">Your feedback is appreciated!</div>
-              </motion.div>
-            )}
-
-            {result === 'lovely' && (
-              <div className="relative overflow-hidden">
-                <div className="text-6xl font-bold mb-4">
-                 thanks !
-                </div>
-                <div className="text-4xl animate-bounce">👑  👑</div>
+            {isRania ? (
+              <div className="relative">
+                <motion.div
+                  initial={{ rotate: -30, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  transition={{ type: 'spring' }}
+                  className="text-6xl font-bold mb-4"
+                >
+                  Thanks Rania! 💐
+                </motion.div>
                 
-                {/* Love animation */}
-                {[...Array(50)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute text-4xl"
-                    initial={{
-                      scale: 0,
-                      x: Math.random() * 100 - 50 + '%',
-                      y: Math.random() * 100 - 50 + '%',
-                    }}
-                    animate={{
-                      scale: [0, 1, 0],
-                      rotate: [0, 360],
-                    }}
-                    transition={{
-                      duration: 2 + Math.random() * 3,
-                      repeat: Infinity,
-                    }}
-                  >
-                    ❤️
-                  </motion.div>
-                ))}
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-4xl"
+                >
+                  Special 🌟
+                </motion.div>
+
+                <div className="mt-8 text-2xl">
+                  " {name} 💕"
+                </div>
+
+                <div className="flex justify-center space-x-4 mt-6">
+                  {['🌹', '💐', '🌸', '💮'].map((emoji, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ y: [0, -20, 0] }}
+                      transition={{ repeat: Infinity, delay: i * 0.2 }}
+                    >
+                      {emoji}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Regular result display
+              <div className="text-4xl">
+                Thank you ! 💌
               </div>
             )}
           </motion.div>
@@ -148,4 +172,4 @@ const RelationshipApp = () => {
   );
 };
 
-export default RelationshipApp;
+export default RomanticApp;
